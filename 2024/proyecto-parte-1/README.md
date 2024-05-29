@@ -11,10 +11,7 @@ que contiene el codigo de esta tarea
 ```
 python generate.py
 ```
-Esto generara un archivo llamado _data.dzn_ la cual estara en un formato compatible
-con MiniZinc. A pesar de que la tarea no lo demanda, existe un codigo que resuelve 
-dichos casos de prueba usando la libreria de MiniZinc de Python, para corroborar
-que la solucion existe para los casos de prueba, ejecutar el siguiente comando:
-```
-python solve.py
-```
+Esto generara una serie de archivos con el formato _data.dzn_ dentro del cual se encontraran los modelos generados en un formato compatible con el IDE de MiniZinc.
+El formato de los archivos indica el valor de las variables _i_ y _j_ generadas, respectivamente.
+
+Finalmenete, se incluye un informe llamado _informe.pdf_, el cual incluye el modelo matematico formulado en detalle.
