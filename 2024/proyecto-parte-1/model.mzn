@@ -16,10 +16,9 @@ constraint sum(i in 1..num_workers, j in 1..num_tasks)(x[i,j] * cost[i,j]) <= P;
 constraint forall(i in 1..num_workers)(sum(j in 1..num_tasks)(x[i,j]) <= N); % Restricción de máximo de tareas por trabajador
 
 % Función objetivo: Minimizar el costo total
-var int: total_cost = sum(i in 1..num_workers, j in 1..num_tasks)(x[i,j] * cost[i,j])
-                    + sum(i in 1..num_workers)(overqualification_cost[i] * sum(j in 1..num_tasks)(x[i,j]));
+var int: total_cost = sum(i in 1..num_workers, j in 1..num_tasks)(x[i,j] * cost[i,j]) + sum(i in 1..num_workers)(overqualification_cost[i] * sum(j in 1..num_tasks)(x[i,j]));
 
 solve minimize total_cost;
 
 % Salida
-output ["x=\(x)\n", "total_cost=\(total_cost)\n"];
+%output ["x=\(x)\n", "total_cost=\(total_cost)\n"];
