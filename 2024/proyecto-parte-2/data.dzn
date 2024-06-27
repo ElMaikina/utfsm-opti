@@ -6,22 +6,32 @@ num_levels = 5;
 P = 500;
 N = 2;
 
-fixed_cost = [
-    [50, 60, 70],  % Costos fijos del trabajador 1 para tareas 1, 2, 3
-    [40, 50, 60],  % Costos fijos del trabajador 2 para tareas 1, 2, 3
-    [30, 40, 50]   % Costos fijos del trabajador 3 para tareas 1, 2, 3
-];
+% Costo fijo de asignar al trabajador i a la tarea j
+fixed_cost = array2d(1..num_workers, 1..num_tasks,
+    [   
+        50, 60, 70,     % Trabajador 1: Costos fijos para tareas 1, 2, 3
+        40, 50, 60,     % Trabajador 2: Costos fijos para tareas 1, 2, 3
+        30, 40, 50      % Trabajador 3: Costos fijos para tareas 1, 2, 3
+    ]
+);
 
-time_cost = [
-    [10, 12, 14],  % Costos por unidad de tiempo del trabajador 1 para tareas 1, 2, 3
-    [8, 10, 12],   % Costos por unidad de tiempo del trabajador 2 para tareas 1, 2, 3
-    [6, 8, 10]     % Costos por unidad de tiempo del trabajador 3 para tareas 1, 2, 3
-];
+% Costo por unidad de tiempo del trabajador i para la tarea j
+time_cost = array2d(1..num_workers, 1..num_tasks,
+    [
+        10, 12, 14,     % Trabajador 1: Costos por unidad de tiempo para tareas 1, 2, 3
+        8, 10, 12,      % Trabajador 2: Costos por unidad de tiempo para tareas 1, 2, 3
+        6, 8, 10        % Trabajador 3: Costos por unidad de tiempo para tareas 1, 2, 3
+    ]     
+);
 
-task_time = [5, 10, 15];  % Tiempo necesario para completar las tareas 1, 2, 3
+% Tiempo necesario para completar cada tarea j
+task_time = [5, 10, 15];  % Tiempos para tareas 1, 2, 3
 
-max_worker_time = [10, 15, 20];  % Tiempo máximo que los trabajadores 1, 2, 3 pueden trabajar
+% Tiempo máximo que cada trabajador i puede ser asignado
+max_worker_time = [10, 15, 20];  % Tiempo máximo de trabajo para trabajadores 1, 2, 3
 
-worker_level = [5, 3, 4];  % Nivel de especialización de los trabajadores 1, 2, 3
+% Nivel de especialización de cada trabajador i
+worker_level = [5, 3, 4];  % Niveles de especialización de los trabajadores 1, 2, 3
 
-task_level = [3, 2, 4];  % Nivel de especialización requerido para las tareas 1, 2, 3
+% Nivel de especialización requerido por cada tarea j
+task_level = [3, 2, 4];  % Niveles de especialización requeridos para tareas 1, 2, 3

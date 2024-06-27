@@ -82,11 +82,11 @@ solve minimize total_cost;
 
 % Salida
 output [
-    "Asignaciones:\\n",
-    "Trabajador -> Tareas\\n",
+    "Asignaciones:",
+    "Trabajador -> Tareas",
     concat([ show(i) ++ ": " ++ show([j | j in 1..num_tasks where fix(x[i,j]) == 1]) ++ "\\n" | i in 1..num_workers ]),
-    "Costo total: ", show(total_cost), "\\n",
-    "Costos fijos: ", show(total_fixed_costs), "\\n",
-    "Costos por unidad de tiempo: ", show(total_time_costs), "\\n",
-    "Costos por sobrecalificación: ", show(overqual_costs), "\\n"
+    "Costo total: ", show(total_cost),
+    "Costos fijos: ", show(total_fixed_costs),
+    "Costos por unidad de tiempo: ", show(total_time_costs),
+    "Costos por sobrecalificación: ", show(overqual_costs),
 ];

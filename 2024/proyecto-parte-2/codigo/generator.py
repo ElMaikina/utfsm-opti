@@ -1,112 +1,105 @@
 import random
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def generate_model_and_data(num_workers, num_tasks, num_levels, P, N, model_filename="assignment_model.mzn", data_filename="data.dzn"):
+def generate_model_and_data(num_workers, num_tasks, num_levels, P, N, model_filename="model.mzn", data_filename="data.dzn"):
     # Generar el modelo MiniZinc
     with open(model_filename, "w") as f:
-        f.write("""
-% Modelo de asignación de trabajadores a tareas
+        f.write(
+"""
+% Número de trabajadores
+int: num_workers;
 
-int: num_workers; % Número de trabajadores
-int: num_tasks; % Número de tareas
-int: num_levels; % Número de niveles de especialización
-int: P; % Presupuesto total
-int: N; % Máximo de tareas por trabajador
-float: max_worker_fraction = 2/3; % Máximo de trabajadores asignados a una sola tarea (en fracción)
+% Número de tareas
+int: num_tasks;
 
-% Matriz de costos fijos por asignación (trabajador i a tarea j)
+% Número de niveles de especialización
+int: num_levels;
+
+% Presupuesto total
+int: P;
+
+% Máximo de tareas por trabajador
+int: N;
+
+% Costo fijo de asignar al trabajador i a la tarea j
 array[1..num_workers, 1..num_tasks] of int: fixed_cost;
 
-% Matriz de costos por unidad de tiempo (trabajador i a tarea j)
+% Costo por unidad de tiempo del trabajador i para la tarea j
 array[1..num_workers, 1..num_tasks] of int: time_cost;
 
-% Tiempo necesario para completar cada tarea
+% Tiempo necesario para completar cada tarea j
 array[1..num_tasks] of int: task_time;
 
-% Tiempo máximo que cada trabajador puede ser asignado
+% Tiempo máximo que cada trabajador i puede ser asignado
 array[1..num_workers] of int: max_worker_time;
 
-% Niveles de especialización de los trabajadores (nivel de cada trabajador)
+% Nivel de especialización de cada trabajador i
 array[1..num_workers] of int: worker_level;
 
-% Niveles de especialización requeridos por las tareas (nivel de cada tarea)
+% Nivel de especialización requerido por cada tarea j
 array[1..num_tasks] of int: task_level;
 
-% Variables de decisión: x[i,j] indica si el trabajador i es asignado a la tarea j
+% Variables de decisión: x[i, j] indica si el trabajador i está asignado a la tarea j
 array[1..num_workers, 1..num_tasks] of var 0..1: x;
 
-% Variables auxiliares: tiempo asignado de cada trabajador a cada tarea
-array[1..num_workers, 1..num_tasks] of var 0..task_time[j]: y;
+% Variables auxiliares: tiempo que cada trabajador i dedica a la tarea j
+array[1..num_workers, 1..num_tasks] of var 0..max(task_time): y;
 
 % Restricciones
 
-% Todos los costos fijos de asignación no pueden superar el presupuesto
-constraint sum(i in 1..num_workers, j in 1..num_tasks)(x[i,j] * fixed_cost[i,j]) <= P;
+% 1. Presupuesto total
+constraint sum(i in 1..num_workers, j in 1..num_tasks)(x[i, j] * fixed_cost[i, j]) <= P;
 
-% Restricción de que cada trabajador no puede realizar más de N tareas
-constraint forall(i in 1..num_workers)(sum(j in 1..num_tasks)(x[i,j]) <= N);
+% 2. Máximo de tareas por trabajador
+constraint forall(i in 1..num_workers)(sum(j in 1..num_tasks)(x[i, j]) <= N);
 
-% Restricción de tiempo máximo de cada trabajador
-constraint forall(i in 1..num_workers)(sum(j in 1..num_tasks)(y[i,j]) <= max_worker_time[i]);
+% 3. Tiempo máximo de trabajo por trabajador
+constraint forall(i in 1..num_workers)(sum(j in 1..num_tasks)(y[i, j]) <= max_worker_time[i]);
 
-% Cada tarea debe ser completada completamente por uno o más trabajadores
-constraint forall(j in 1..num_tasks)(sum(i in 1..num_workers)(y[i,j]) >= task_time[j]);
+% 4. Completar todas las tareas
+constraint forall(j in 1..num_tasks)(sum(i in 1..num_workers)(y[i, j]) >= task_time[j]);
 
-% No más de dos tercios de los trabajadores pueden estar asignados a una sola tarea
-constraint forall(j in 1..num_tasks)(
-    sum(i in 1..num_workers)(x[i,j]) <= ceil(max_worker_fraction * num_workers)
-);
+% 5. Límite de trabajadores por tarea
+constraint forall(j in 1..num_tasks)(sum(i in 1..num_workers)(x[i, j]) <= ceil(2.0 / 3.0 * num_workers));
 
-% Asignación permitida sólo si el trabajador tiene el nivel de especialización adecuado o superior
+% 6. Nivel de especialización adecuado
 constraint forall(i in 1..num_workers, j in 1..num_tasks)(
-    x[i,j] = 1 -> worker_level[i] >= task_level[j]
+    x[i, j] = 1 -> worker_level[i] >= task_level[j]
 );
 
-% Si un trabajador es asignado a una tarea, el tiempo asignado debe ser mayor que cero
+% 7. Consistencia entre asignación y tiempo
 constraint forall(i in 1..num_workers, j in 1..num_tasks)(
-    x[i,j] = 1 -> y[i,j] > 0
+    x[i, j] = 1 -> y[i, j] > 0
 );
 
-% Costos por sobrecalificación
+constraint forall(i in 1..num_workers, j in 1..num_tasks)(
+    y[i, j] > 0 -> x[i, j] = 1
+);
+
+% 8. Sobrecualificación y costos totales
 var int: overqual_costs = sum(i in 1..num_workers, j in 1..num_tasks)(
-    x[i,j] * max(0, worker_level[i] - task_level[j])
+    x[i, j] * max(0, worker_level[i] - task_level[j])
 );
 
-% Costos totales fijos y de tiempo
-var int: total_fixed_costs = sum(i in 1..num_workers, j in 1..num_tasks)(x[i,j] * fixed_cost[i,j]);
-var int: total_time_costs = sum(i in 1..num_workers, j in 1..num_tasks)(y[i,j] * time_cost[i,j]);
+var int: total_fixed_costs = sum(i in 1..num_workers, j in 1..num_tasks)(x[i, j] * fixed_cost[i, j]);
+var int: total_time_costs = sum(i in 1..num_workers, j in 1..num_tasks)(y[i, j] * time_cost[i, j]);
 
-% Función objetivo: Minimizar el costo total (fijo y por unidad de tiempo)
 var int: total_cost = total_fixed_costs + total_time_costs + overqual_costs;
 
 solve minimize total_cost;
 
 % Salida
 output [
-    "Asignaciones:\\n",
-    "Trabajador -> Tareas\\n",
+    "Asignaciones:",
+    "Trabajador -> Tareas",
     concat([ show(i) ++ ": " ++ show([j | j in 1..num_tasks where fix(x[i,j]) == 1]) ++ "\\n" | i in 1..num_workers ]),
-    "Costo total: ", show(total_cost), "\\n",
-    "Costos fijos: ", show(total_fixed_costs), "\\n",
-    "Costos por unidad de tiempo: ", show(total_time_costs), "\\n",
-    "Costos por sobrecalificación: ", show(overqual_costs), "\\n"
+    "Costo total: ", show(total_cost),
+    "Costos fijos: ", show(total_fixed_costs),
+    "Costos por unidad de tiempo: ", show(total_time_costs),
+    "Costos por sobrecalificación: ", show(overqual_costs),
 ];
-""")
+
+"""
+)
 
     print(f"Modelo MiniZinc generado y guardado en {model_filename}")
 
@@ -160,7 +153,6 @@ output [
 
     print(f"Datos de instancia generados y guardados en {data_filename}")
 
+# Pasarle los parametros aqui para que genere un modelo
+generate_model_and_data(5, 8, 5, 300, 3)
 
-#generate_model_and_data(5, 8, 5, 300, 3)
-
-# Uso del generador

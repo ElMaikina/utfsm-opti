@@ -17,7 +17,6 @@ def main() -> int:
     M = generar_tareas_max(D) # Cantidad de tareas maximas por trabajador
     O = generar_costo_sobre(D) # Costo de sobrecalificacion por tarea
 
-
     return 0
 
 if __name__ == '__main__':
