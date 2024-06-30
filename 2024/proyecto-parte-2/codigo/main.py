@@ -99,7 +99,7 @@ def solve_optimization(instancia: Instancia):
     instance = minizinc.Instance(solver, model)
 
     with instancia.timer:
-        result = instance.solve(processes=1000)
+        result = instance.solve(processes=16)
 
     # Imprimir los resultados
     print(f"x = {result['x']}")
