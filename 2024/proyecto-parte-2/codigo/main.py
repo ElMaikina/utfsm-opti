@@ -27,8 +27,8 @@ class CodeTimer:
         self._thread.start()
 
     def stop(self):
-        self._thread.join()
         self.end_time = time.time()
+        self._thread.join()
 
     @property
     def elapsed_time(self):
@@ -101,9 +101,7 @@ def solve_optimization(instancia: Instancia):
     with instancia.timer:
         result = instance.solve(processes=16)
 
-    # Imprimir los resultados
-    print(f"x = {result['x']}")
-    print(f"y = {result['y']}")
+    print(result)
 
     return result
 
@@ -143,9 +141,8 @@ def main():
             print("\n"*2)
             print(f"Instancia {i+1}: {instancia.size} {instancia.num_workers} trabajadores, {instancia.num_tasks} tareas")
 
-            t = solve_optimization(instancia)
+            solve_optimization(instancia)
 
-            print(f"Tiempo de ejecución instancia tamaño {instancia.size} {i+1}: {t:.2f} ms\n\n")
             print()
             print_as_csv()
     except KeyboardInterrupt:
