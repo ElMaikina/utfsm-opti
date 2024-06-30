@@ -1,10 +1,4 @@
-import random
 
-def generate_model_and_data(num_workers, num_tasks, num_levels, P, N, model_filename="model.mzn", data_filename="data.dzn"):
-    # Generar el modelo MiniZinc
-    with open(model_filename, "w") as f:
-        f.write(
-"""
 % Número de trabajadores
 int: num_workers;
 
@@ -91,67 +85,9 @@ solve minimize total_cost;
 output [
     "Asignaciones: ",
     ", Trabajador -> Tareas",
-    concat([ show(i) ++ ": " ++ show([j | j in 1..num_tasks where fix(x[i,j]) == 1]) ++ "\\n" | i in 1..num_workers ]),
+    concat([ show(i) ++ ": " ++ show([j | j in 1..num_tasks where fix(x[i,j]) == 1]) ++ "\n" | i in 1..num_workers ]),
     ", Costo total: ", show(total_cost),
     ", Costos fijos: ", show(total_fixed_costs),
     ", Costos por unidad de tiempo: ", show(total_time_costs),
     ", Costos por sobrecalificación: ", show(overqual_costs),
 ];
-"""
-)
-
-    print(f"Modelo MiniZinc generado y guardado en {model_filename}")
-
-    # Generar los datos de la instancia
-    worker_level = [random.randint(1, num_levels) for _ in range(num_workers)]
-    task_level = [random.randint(1, num_levels) for _ in range(num_tasks)]
-    fixed_cost = [[random.randint(1, 20) for _ in range(num_tasks)] for _ in range(num_workers)]
-    time_cost = [[random.randint(1, 10) for _ in range(num_tasks)] for _ in range(num_workers)]
-    task_time = [random.randint(10, 50) for _ in range(num_tasks)]
-    max_worker_time = [random.randint(30, 100) for _ in range(num_workers)]
-
-    # Crear el archivo de datos .dzn
-    with open(data_filename, "w") as f:
-        f.write(f"num_workers = {num_workers};\n")
-        f.write(f"num_tasks = {num_tasks};\n")
-        f.write(f"num_levels = {num_levels};\n")
-        f.write(f"P = {P};\n")
-        f.write(f"N = {N};\n")
-
-        f.write("worker_level = [")
-        f.write(", ".join(map(str, worker_level)))
-        f.write("];\n")
-
-        f.write("task_level = [")
-        f.write(", ".join(map(str, task_level)))
-        f.write("];\n")
-
-        f.write("fixed_cost = array2d(1..num_workers, 1..num_tasks, [")
-        for i in range(num_workers):
-            for j in range(num_tasks):
-                f.write(f"{fixed_cost[i][j]}")
-                if i < num_workers - 1 or j < num_tasks - 1:
-                    f.write(", ")
-        f.write("]);\n")
-
-        f.write("time_cost = array2d(1..num_workers, 1..num_tasks, [")
-        for i in range(num_workers):
-            for j in range(num_tasks):
-                f.write(f"{time_cost[i][j]}")
-                if i < num_workers - 1 or j < num_tasks - 1:
-                    f.write(", ")
-        f.write("]);\n")
-
-        f.write("task_time = [")
-        f.write(", ".join(map(str, task_time)))
-        f.write("];\n")
-
-        f.write("max_worker_time = [")
-        f.write(", ".join(map(str, max_worker_time)))
-        f.write("];\n")
-
-    print(f"Datos de instancia generados y guardados en {data_filename}")
-
-# Pasarle los parametros aqui para que genere un modelo
-generate_model_and_data(5, 8, 5, 300, 3)
-
